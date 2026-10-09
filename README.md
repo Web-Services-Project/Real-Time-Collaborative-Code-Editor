@@ -1,4 +1,4 @@
-# Group Members Name and Student Id 
+# Group Members Names and Students Id 
 
 | Name | Student Id |
 |---|:---:|
