@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  title: Rooms Service
+  version: "1.0.0"
+  description: >
+    Owns coding-room creation, membership and lifecycle for CollabCode.
+    Calls Auth (to verify bearer tokens) and Documents (to initialize a
+    room's file) over HTTP.
+servers:
+  - url: http://localhost:4000
+
+paths:
+  /rooms:
+    get:
+      summary: List public rooms
+      responses:
+        "200":
+          description: A page of rooms
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: array
+                    items: { $ref: "#/components/schemas/Room" }
+                  count: { type: integer }
+    post:
+      summary: Create a room
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateRoomRequest" }
+      responses:
+        "201":
+          description: Room created
+          headers:
+            Location: { schema: { type: string } }
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Room" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    options:
+      summary: Supported methods for /rooms
+      responses:
+        "204": { description: No content, Allow header lists supported methods }
+
+  /rooms/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Fetch a room
+      parameters:
+        - in: header
+          name: If-None-Match
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Room found
+          headers:
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Room" }
+            application/xml: {}
+        "304": { description: Not modified (If-None-Match matched) }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      summary: Update a room (owner only)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: header
+          name: If-Match
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PatchRoomRequest" }
+      responses:
+        "200":
+          description: Updated room
+          headers:
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Room" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "412": { description: "Precondition Failed — stale If-Match" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "428": { description: "Precondition Required — If-Match missing" }
+    delete:
+      summary: Delete a room (owner only)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "204": { description: Deleted }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /rooms/{id}/join:
+    post:
+      summary: Join a room
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Joined (or already a member — idempotent)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Room" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { description: "Room is full" }
+
+  /rooms/{id}/leave:
+    post:
+      summary: Leave a room
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Left the room
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Room" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Room:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        ownerId: { type: string }
+        isPrivate: { type: boolean }
+        maxMembers: { type: integer }
+        members:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              role: { type: string, enum: [owner, editor] }
+        docStatus: { type: string, enum: [pending, ready] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateRoomRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 3, maxLength: 60 }
+        isPrivate: { type: boolean, default: false }
+        maxMembers: { type: integer, minimum: 2, maximum: 20, default: 8 }
+    PatchRoomRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 3, maxLength: 60 }
+        maxMembers: { type: integer, minimum: 2, maximum: 20 }
+    Problem:
+      type: object
+      description: RFC 7807-style problem details, used for every error response.
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer token
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Forbidden:
+      description: Authenticated but not allowed to perform this action
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    NotFound:
+      description: Resource does not exist
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    ValidationError:
+      description: Well-formed request, invalid field values
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }
