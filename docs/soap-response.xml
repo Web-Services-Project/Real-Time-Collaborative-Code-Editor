@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:cc="http://collabcode.dev/soap/">
+  <soap:Header/>
+  <soap:Body>
+    <cc:RunCodeResponse>
+      <cc:stdout>hello from CollabCode
+</cc:stdout>
+      <cc:stderr></cc:stderr>
+      <cc:exitCode>0</cc:exitCode>
+      <cc:durationMs>184</cc:durationMs>
+    </cc:RunCodeResponse>
+  </soap:Body>
+</soap:Envelope>

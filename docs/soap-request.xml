@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:cc="http://collabcode.dev/soap/">
+  <soap:Header/>
+  <soap:Body>
+    <cc:RunCodeRequest>
+      <cc:language>python3</cc:language>
+      <cc:sourceCode>print("hello from CollabCode")</cc:sourceCode>
+      <cc:stdin></cc:stdin>
+      <cc:timeoutMs>5000</cc:timeoutMs>
+    </cc:RunCodeRequest>
+  </soap:Body>
+</soap:Envelope>

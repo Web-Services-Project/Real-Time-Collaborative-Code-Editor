@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="CodeExecutionPartner"
+    targetNamespace="http://collabcode.dev/soap/"
+    xmlns:tns="http://collabcode.dev/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+  <!-- ===================== types ===================== -->
+  <types>
+    <xsd:schema targetNamespace="http://collabcode.dev/soap/">
+
+      <xsd:element name="RunCodeRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="language" type="xsd:string"/>
+            <xsd:element name="sourceCode" type="xsd:string"/>
+            <xsd:element name="stdin" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="timeoutMs" type="xsd:int" minOccurs="0" default="5000"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="RunCodeResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="stdout" type="xsd:string"/>
+            <xsd:element name="stderr" type="xsd:string"/>
+            <xsd:element name="exitCode" type="xsd:int"/>
+            <xsd:element name="durationMs" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </types>
+
+  <!-- ===================== messages ===================== -->
+  <message name="RunCodeRequestMessage">
+    <part name="parameters" element="tns:RunCodeRequest"/>
+  </message>
+  <message name="RunCodeResponseMessage">
+    <part name="parameters" element="tns:RunCodeResponse"/>
+  </message>
+
+  <!-- ===================== portType ===================== -->
+  <portType name="CodeExecutionPortType">
+    <operation name="RunCode">
+      <input message="tns:RunCodeRequestMessage"/>
+      <output message="tns:RunCodeResponseMessage"/>
+    </operation>
+  </portType>
+
+  <!-- ===================== binding ===================== -->
+  <binding name="CodeExecutionBinding" type="tns:CodeExecutionPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="RunCode">
+      <soap:operation soapAction="http://collabcode.dev/soap/RunCode"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+
+  <!-- ===================== service ===================== -->
+  <service name="CodeExecutionService">
+    <port name="CodeExecutionPort" binding="tns:CodeExecutionBinding">
+      <soap:address location="https://partner.codesandbox-example.com/soap/execute"/>
+    </port>
+  </service>
+
+</definitions>

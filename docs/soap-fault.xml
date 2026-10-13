@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Header/>
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>partner:Timeout</faultstring>
+      <faultactor>https://partner.codesandbox-example.com/soap/execute</faultactor>
+      <detail>
+        <cc:TimeoutDetail xmlns:cc="http://collabcode.dev/soap/">
+          <cc:timeoutMs>5000</cc:timeoutMs>
+          <cc:message>Execution exceeded the requested 5000ms timeout and was terminated.</cc:message>
+        </cc:TimeoutDetail>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>
