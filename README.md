@@ -7,11 +7,11 @@ create "rooms" and edit the same code file together in real time.
 
 | Service | Owner |
 |---|---|
-| Auth | M1 |
-| Rooms (central service) | M2 |
-| Documents | M3 |
-| Collaboration / Presence (WebSocket) | M4 |
-| Code Execution (external SOAP partner, design only) | M5 |
+| Auth | Saurabh Singh Chauhan 20252651049 |
+| Rooms (central service) | Yash Namdev 20252651066 |
+| Documents-Service | Harsh Jain 20252651022 |
+| Collaboration / Presence (WebSocket) | Anupam Rai 20252651011 |
+| Frontend | Arpit Tamrakar 20252651012 |
 
 *(swap M1–M5 for real names/roll numbers in this table)*
 
